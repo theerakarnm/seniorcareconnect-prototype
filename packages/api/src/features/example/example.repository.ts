@@ -1,6 +1,5 @@
-import db, { type PgTx } from "../../core/database";
-import { eq, ilike, or, count, like, desc, asc, sql, and } from "drizzle-orm";
-import { ExampleItem } from "./example.interface";
+import { db } from "@acme/db/client";
+import type { ExampleItem } from "./example.interface";
 
 class ExampleRepository {
   private db;

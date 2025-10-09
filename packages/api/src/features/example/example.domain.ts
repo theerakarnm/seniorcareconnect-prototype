@@ -20,6 +20,14 @@ export class ExampleDomain {
 
     return `${prefix}${nextNumber.toString().padStart(3, '0')}`;
   }
+
+  public getExampleById(id: number) {
+    return exampleRepository.getExampleById(id);
+  }
+
+  public getExample() {
+    return exampleRepository.getExample();
+  }
 }
 
 // Export singleton instance
