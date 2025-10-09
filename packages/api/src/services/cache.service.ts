@@ -2,12 +2,11 @@ import { RedisClient } from '../lib/redis';
 import { config } from '../config';
 
 export class CacheService {
+  private readonly redisClient = new RedisClient();
+
   private readonly defaultTTL = config.cache.defaultTTL;
   private readonly sessionTTL = config.cache.sessionTTL;
   private readonly searchTTL = config.cache.searchTTL;
-  private readonly redisClient = new RedisClient();
-
-  // constructor() { }
 
   // Generic cache methods
   async get<T>(key: string): Promise<T | null> {
@@ -15,7 +14,7 @@ export class CacheService {
   }
 
   async set<T>(key: string, value: T, ttl?: number): Promise<boolean> {
-    return await this.redisClient.setJSON(key, value, ttl || this.defaultTTL);
+    return await this.redisClient.setJSON(key, value, ttl ?? this.defaultTTL);
   }
 
   async delete(key: string): Promise<boolean> {
