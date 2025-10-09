@@ -4,24 +4,50 @@ import { z } from "zod/v4";
 import {
   integer,
   pgTable,
-
-  varchar,
   uuid,
   text,
   timestamp,
   decimal,
   date,
+  pgEnum,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 import * as authSchema from "./auth-schema";
-import * as enums from "./db.enum";
 
-export const guestBook = pgTable("guestBook", {
-  id: integer().primaryKey().generatedAlwaysAsIdentity(),
-  name: varchar({ length: 255 }).notNull(),
-  email: varchar({ length: 255 }).notNull().unique(),
-});
+
+// Enums
+export const userRoleEnum = pgEnum("user_role", [
+  "customer",
+  "supplier",
+  "admin",
+]);
+export const qcStatusEnum = pgEnum("qc_status", [
+  "pending",
+  "approved",
+  "rejected",
+]);
+export const bookingStatusEnum = pgEnum("booking_status", [
+  "draft",
+  "approved",
+  "paid",
+  "failed",
+]);
+export const nursingHomeStatusEnum = pgEnum("nursing_home_status", [
+  "draft",
+  "live",
+  "paused",
+]);
+export const payoutStatusEnum = pgEnum("payout_status", [
+  "draft",
+  "approved",
+  "paid",
+  "failed",
+]);
+export const pricingModelEnum = pgEnum("pricing_model", [
+  "per_night",
+  "package",
+]);
 
 export const supplier = pgTable("supplier", {
   id: uuid("id").primaryKey(),
@@ -31,7 +57,7 @@ export const supplier = pgTable("supplier", {
   legalName: text("legal_name").notNull(),
   taxId: text("tax_id"),
   payoutAccountRef: text("payout_account_ref"),
-  qcStatus: enums.qcStatusEnum("qc_status").notNull(),
+  qcStatus: qcStatusEnum("qc_status").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
@@ -49,7 +75,7 @@ export const nursingHome = pgTable("nursing_home", {
   city: text("city").notNull(),
   province: text("province").notNull(),
   gps: text("gps"),
-  status: enums.nursingHomeStatusEnum("status").notNull(),
+  status: nursingHomeStatusEnum("status").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
@@ -81,7 +107,7 @@ export const ratePlan = pgTable("rate_plan", {
   name: text("name").notNull(),
   cancelPolicy: text("cancel_policy"),
   mealPlan: text("meal_plan"),
-  pricingModel: enums.pricingModelEnum("pricing_model").notNull(),
+  pricingModel: pricingModelEnum("pricing_model").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
@@ -115,7 +141,7 @@ export const booking = pgTable("booking", {
   nursingHomeId: uuid("nursing_home_id")
     .notNull()
     .references(() => nursingHome.id),
-  status: enums.bookingStatusEnum("status").notNull(),
+  status: bookingStatusEnum("status").notNull(),
   checkIn: date("check_in").notNull(),
   checkOut: date("check_out").notNull(),
   guests: integer("guests").notNull(),
@@ -184,7 +210,7 @@ export const payout = pgTable("payout", {
     .references(() => supplier.id),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   currency: text("currency").notNull(),
-  status: enums.payoutStatusEnum("status").notNull(),
+  status: payoutStatusEnum("status").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
