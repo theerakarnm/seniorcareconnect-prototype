@@ -31,14 +31,13 @@ A comprehensive marketplace platform connecting elderly care seekers with nursin
 
 ## 🏗️ Technology Stack
 
-- **Frontend Web**: Next.js 15 with React 19
+- **Frontend Web**: React Router v7
 - **Frontend Mobile**: Expo with React on Lynx
-- **Backend API**: tRPC for type-safe APIs
+- **Backend API**: Hono.js
 - **Database**: PostgreSQL with Drizzle ORM
 - **Authentication**: Better Auth
 - **Styling**: Tailwind CSS with shadcn/ui
-- **State Management**: TanStack Query
-- **Build System**: Turborepo with pnpm workspaces
+- **State Management:** React Router State (primary method https://reactrouter.com/explanation/state-management) / Zustand (secondary method)
 
 ## 📋 Key Business Rules
 
@@ -69,8 +68,7 @@ A comprehensive marketplace platform connecting elderly care seekers with nursin
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 22.19.0+
-- pnpm 10.15.1+
+- Bun 1.2+
 - PostgreSQL database
 
 ### Installation
@@ -90,51 +88,16 @@ cp .env.example .env
 # Set up database
 pnpm db:push
 
-# Generate authentication schema
-pnpm auth:generate
-```
-
-### Development
-
-```bash
-# Start all applications
-pnpm dev
-
-# Start web app only
-pnpm dev:next
-
-# Start mobile app
-pnpm android  # or pnpm ios
-```
-
-### Building
-
-```bash
-# Build all packages
-pnpm build
-
-# Type checking
-pnpm typecheck
-
-# Linting and formatting
-pnpm lint
-pnpm format
 ```
 
 ## 📁 Project Structure
 
 ```
 ├── apps/
-│   ├── nextjs/          # Web application
-│   └── expo/            # Mobile application
-├── packages/
-│   ├── api/             # tRPC API definitions
-│   ├── auth/            # Authentication logic
-│   ├── db/              # Database schema & client
-│   ├── ui/              # Shared UI components
-│   └── validators/      # Zod validation schemas
-├── tooling/             # Development configurations
-└── docs/                # Documentation
+│   ├── backend/            # Web application
+│   └── client-mobile-app/  # Mobile application
+│   └── web-internal/       # Mobile application
+└── docs/                   # Documentation
 ```
 
 ## 🎯 Milestone 1 Features
@@ -177,11 +140,13 @@ AUTH_DISCORD_SECRET=
 NEXT_PUBLIC_APP_URL=
 ```
 
-## 📚 Documentation
+## External Documentation
 
-- [Booking States](/docs/booking-states.md) - Detailed booking flow documentation
-- [API Documentation](/docs/api.md) - tRPC API reference
-- [Deployment Guide](/docs/deployment.md) - Production deployment instructions
+- [Drizzle Docs](https://orm.drizzle.team/docs/overview) - ORM reference
+- [React Router](https://reactrouter.com/home) - Web framework
+- [Lynx Docs](https://lynxjs.org/guide/start/quick-start.html)
+- [PDPA Thailand Overview](https://www.pdpc.gov.sg/overview-of-pdpa) - Privacy law
+
 
 ## 🤝 Contributing
 
