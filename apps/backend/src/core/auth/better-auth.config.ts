@@ -53,6 +53,15 @@ export const auth = betterAuth({
     //   clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     // },
   },
+  user: {
+    additionalFields: {
+      role: {
+        type: "string",
+        required: true,
+        defaultValue: "customer",
+      },
+    },
+  },
   baseURL: config.app.baseUrl || "http://localhost:3000",
   trustedOrigins: [config.app.baseUrl || "http://localhost:3000"],
 });

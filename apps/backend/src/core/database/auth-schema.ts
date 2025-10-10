@@ -1,14 +1,15 @@
-import { pgTable, text, timestamp, boolean, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
+import * as enums from "./db.enum";
 
-export const userRoleEnum = pgEnum("user_role", ["customer", "supplier", "admin"]);
-
+// ### Better Auth Tables ###
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
   image: text("image"),
-  role: userRoleEnum("role").default("customer").notNull(),
+  role: enums.userRoleEnum("role").default("customer").notNull(),
+  kycVerified: boolean("kyc_verified").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
@@ -62,3 +63,4 @@ export const verification = pgTable("verification", {
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
 });
+// ### End Better Auth Tables ###

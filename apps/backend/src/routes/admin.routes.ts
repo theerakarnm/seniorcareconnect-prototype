@@ -1,14 +1,19 @@
 import { Hono } from 'hono';
 import { requireAuth, requireAdmin } from '../middleware/rbac.middleware';
+import { auth } from '~/core/auth/better-auth.config';
 
-const admin = new Hono();
+const admin = new Hono<{
+  Variables: {
+    user: typeof auth.$Infer.Session.user | null;
+    session: typeof auth.$Infer.Session.session | null
+  }
+}>();
 
 /**
  * Admin dashboard - Admin only
  */
 admin.get('/dashboard', requireAuth, requireAdmin, async (c) => {
-  const user = (c as any).user;
-
+  const user = c.get('user')!;
   return c.json({
     success: true,
     data: {

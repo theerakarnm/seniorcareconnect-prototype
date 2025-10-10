@@ -15,12 +15,13 @@ export interface AuthenticatedContext extends Context {
 /**
  * Middleware to check if user is authenticated
  */
-export const requireAuth = async (c: Context, next: Next) => {
-  const session = await auth.api.getSession({
-    headers: c.req.header(),
-  });
-
-  if (!session?.user) {
+export const requireAuth = async (c: Context<{
+  Variables: {
+    user: typeof auth.$Infer.Session.user | null;
+    session: typeof auth.$Infer.Session.session | null;
+  };
+}, any, {}>, next: Next) => {
+  if (!c.get('session')) {
     return c.json(
       {
         success: false,
@@ -32,14 +33,6 @@ export const requireAuth = async (c: Context, next: Next) => {
       401
     );
   }
-
-  // Attach user info to context
-  (c as AuthenticatedContext).user = {
-    id: session.user.id,
-    email: session.user.email,
-    name: session.user.name,
-    role: session.user.role as UserRole,
-  };
 
   await next();
 };
