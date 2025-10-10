@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { exampleDomain } from "../resources/example/example.domain";
+import { exampleDomain } from "../features/example/example.domain";
 
 const exampleRoute = new Hono();
 
