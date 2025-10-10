@@ -1,227 +1,185 @@
-# CLAUDE.md - Nursing Home Booking Platform
+# CLAUDE.md
 
-> AI Context File for Claude and other AI assistants working on this project
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
 
-**Platform Name:** Nursing Home Booking Platform  
-**Milestone:** M1 - Booking System (Core Feature)  
-**Timeline:** 2-3 weeks for initial demo  
-**Purpose:** Connect elderly care seekers with nursing homes through a booking marketplace, similar to Agoda/Grab model
+**Platform Name:** Nursing Home Booking Platform
+**Current Milestone:** M1 - Booking System (Core Feature)
+**Timeline:** 2-3 weeks for initial demo
+**Architecture:** Cross-platform (Web + Mobile) with shared business logic
 
-### Core Value Proposition
-- **For Customers:** Search, compare, and book nursing home rooms nationwide
-- **For Suppliers:** Manage properties, rooms, pricing, and bookings
-- **For Platform:** Quality control, payment processing, and analytics
+This is a comprehensive marketplace platform connecting elderly care seekers with nursing homes across the nation. The platform acts as a payment intermediary, similar to Agoda/Grab model.
 
-### Key Business Rules
-- Platform acts as payment intermediary (customers pay platform, not suppliers directly)
-- Quality control (QC) approval required for all suppliers before going live
-- Booking states follow strict state machine (see `/docs/booking-states.md`)
-- PDPA compliance is mandatory for all data collection
-
----
-
-## Technical Stack
+## Technology Stack
 
 ### Backend
-- **Runtime:** Bun.sh (v1.2)
+- **Runtime:** Bun 1.2+
 - **Framework:** Hono.js
-- **Language:** TypeScript preferred for new code
-- **ORM:** Drizzle ORM
-- **API Style:** RESTful + BFF pattern
+- **Language:** TypeScript
+- **Database:** PostgreSQL with Drizzle ORM
+- **Authentication:** Better Auth
+- **Cache:** Redis (optional)
 
-### Frontend
-- **Mobile:** Lynx (iOS + Android)
-- **Web (Supplier/Admin):** React Router v7
-- **State Management:** React Router State (primary method https://reactrouter.com/explanation/state-management) / Zustand (secondary method)
-- **UI Library:** React Native Paper / shadcn/ui (web)
+### Frontend Web (Internal/Admin)
+- **Framework:** React Router v7
+- **Styling:** Tailwind CSS with shadcn/ui
+- **Language:** TypeScript
 
-### Database
-- **Primary:** PostgreSQL 16+
-- **Cache:** Redis 7+
-- **Search:** PostgreSQL Full-Text Search (Elasticsearch if needed later)
+### Frontend Mobile (Customer)
+- **Framework:** Lynx (React-based)
+- **Build Tool:** Rsbuild with Rspeedy
+- **Language:** TypeScript
 
----
+## Development Commands
 
-## Development Guidelines
+### Backend Development
+```bash
+cd apps/backend
 
-### Code Style
-- **Formatting:** Prettier with 80-char line width (`.prettierrc` in root)
-- **Linting:** ESLint with strict TypeScript rules
-- **Naming:**
-  - Files: `kebab-case.ts`, `PascalCase.tsx` (components)
-  - Variables/functions: `camelCase`
-  - Constants: `UPPER_SNAKE_CASE`
-  - Database tables: `snake_case`
+# Start development server with hot reload
+bun run dev
 
-### TypeScript Conventions
-```typescript
-// ✅ Good: Explicit types, avoid `any`
-interface BookingCreateInput {
-  userId: string;
-  roomTypeId: string;
-  checkIn: Date;
-  checkOut: Date;
-}
+# Database operations
+bun run db:generate  # Generate Drizzle migrations
+bun run db:migrate   # Run database migrations
+bun run db:push      # Push schema changes to database
+bun run db:studio    # Open Drizzle Studio
 
-async function createBooking(
-  input: BookingCreateInput
-): Promise<Booking> {
-  // implementation
-}
-
-// ❌ Bad: Implicit any, unclear types
-function createBooking(data) {
-  // ...
-}
+# Development services (Redis, PostgreSQL)
+bun run dev:services        # Start docker services
+bun run dev:services:stop   # Stop docker services
+bun run dev:services:logs   # View service logs
 ```
 
-### API Response Format
+### Web Internal Development
+```bash
+cd apps/web-internal
 
-```typescript
-// Success response
-{
-  "success": true,
-  "data": { /* ... */ },
-  "meta": {
-    "timestamp": "2025-01-05T10:30:00Z",
-    "requestId": "uuid"
-  }
-}
+# Start development server
+bun run dev
 
-// Error response
-{
-  "success": false,
-  "error": {
-    "code": "BOOKING_UNAVAILABLE",
-    "message": "Room is not available for selected dates",
-    "details": { /* ... */ }
-  },
-  "meta": { /* ... */ }
-}
+# Build for production
+bun run build
+
+# Type checking
+bun run typecheck
+
+# Database operations (uses different Drizzle version)
+bun run db:generate
+bun run db:migrate
 ```
 
-### Database Conventions
-- **IDs:** Use UUID v4 (`id UUID PRIMARY KEY DEFAULT gen_random_uuid()`)
-- **Timestamps:** Always include `created_at` and `updated_at` (with triggers)
-- **Soft Deletes:** Use `deleted_at TIMESTAMP NULL` where applicable
-- **Indexes:** Add for all FK, frequently queried fields, and date ranges
-- **Migrations:** Never edit existing migrations; create new ones
+### Mobile App Development
+```bash
+cd apps/client-mobile-app
 
-### Git Workflow
-- **Branch naming:** `feature/booking-payment`, `fix/email-template`, `docs/api-spec`
-- **Commits:** Conventional Commits format (`feat:`, `fix:`, `docs:`, `refactor:`)
-- **PRs:** Must pass CI, require 1 approval, include tests for new features
+# Start development server
+bun run dev
 
----
+# Build for production
+bun run build
 
-## Context for AI Assistants
+# Run tests
+bun run test
+```
 
-### Preferred Patterns
+## Project Structure
 
-**1. Service Layer Pattern**
-- Handler handle HTTP, validation, and serialization
-- Domain contain business logic
+```
+apps/
+├── backend/                    # Hono.js API server
+│   ├── src/
+│   │   ├── core/              # Core business logic
+│   │   │   ├── auth/          # Authentication system
+│   │   │   ├── config/        # Configuration management
+│   │   │   ├── database/      # Database schema and connection
+│   │   │   └── services/      # Business services
+│   │   ├── routes/            # API route handlers
+│   │   ├── resources/         # Resource-based endpoints
+│   │   └── libs/              # Shared utilities
+│   └── drizzle.config.ts      # Drizzle configuration
+├── web-internal/              # React Router web app
+│   ├── app/                   # App routes and components
+│   └── components.json        # shadcn/ui configuration
+└── client-mobile-app/         # Lynx mobile app
+    └── rsbuild.config.ts      # Build configuration
+```
+
+## Environment Setup
+
+1. Copy `.env.example` to `.env` and configure:
+   ```bash
+   # Database
+   POSTGRES_URL="postgres://username:password@host:port/database"
+
+   # Authentication
+   AUTH_SECRET="your-secret-key"
+   AUTH_DISCORD_ID=""
+   AUTH_DISCORD_SECRET=""
+
+   # Node environment
+   NODE_ENV="development"
+   ```
+
+2. Install dependencies:
+   ```bash
+   bun install
+   ```
+
+3. Set up database:
+   ```bash
+   cd apps/backend
+   bun run db:push
+   ```
+
+## Database and ORM
+
+- **Schema location:** `apps/backend/src/core/database/schema.ts`
+- **Migrations:** Generated in `apps/backend/drizzle/`
+- **ORM:** Drizzle with PostgreSQL dialect
+- **Always use transactions** for multi-step operations
+
+## Key Architecture Patterns
+
+### Service Layer Pattern
+- Handlers manage HTTP, validation, and serialization
+- Domain services contain business logic
 - Repositories handle database access
-- Keep handler thin, domain testable
-- Each feature will contain to resources folders
+- Keep handlers thin, domains testable
 
-**2. Error Handling**
-```typescript
-// Use custom error classes
-export class BookingNotFoundError extends Error {
-  code = 'BOOKING_NOT_FOUND';
-  statusCode = 404;
-}
+### Authentication Flow
+- Uses Better Auth for authentication
+- Discord OAuth provider preconfigured
+- JWT-based session management
+- Role-based access control
 
-// Central error handler middleware
-app.use((err, req, res, next) => {
-  logger.error(err);
-  res.status(err.statusCode || 500).json({
-    success: false,
-    error: {
-      code: err.code || 'INTERNAL_ERROR',
-      message: err.message,
-    },
-  });
-});
-```
+### Error Handling
+- Custom error classes with specific error codes
+- Centralized error handling middleware
+- Standardized error response format
 
-**3. Transaction Management**
-```typescript
-// Always use transactions for multi-step operations
-await db.$transaction(async (tx) => {
-  const booking = await tx.booking.create({ data });
-  await tx.priceCalendar.updateMany({
-    where: { /* ... */ },
-    data: { available: { decrement: 1 } },
-  });
-  await tx.payment.create({ data: { bookingId: booking.id } });
-});
-```
-### Things to Avoid
+## Development Notes
 
-❌ **Don't** expose internal IDs in URLs (use UUIDs or slugs)  
-❌ **Don't** store payment card details (PCI-DSS violation)  
-❌ **Don't** use `SELECT *` in production queries  
-❌ **Don't** commit `.env` files or secrets to Git  
-❌ **Don't** use `any` type in TypeScript (use `unknown` if truly dynamic)  
-❌ **Don't** make DB queries in loops (use batch queries or joins)  
+- The backend runs on port 3001 by default
+- Redis is optional (can be disabled with REDIS_ENABLED=false)
+- All new code should prefer TypeScript over JavaScript
+- Use UUID v4 for primary keys
+- Follow the existing naming conventions (camelCase for variables, PascalCase for components)
+- Database tables use snake_case naming
 
-### Helpful Aliases
+## Testing
 
-When generating code, assume these common imports:
+- Backend tests are located in `apps/backend/src/__test__/`
+- Mobile app uses Vitest for testing
+- Always write tests for new business logic
 
-```typescript
-// Database
-import { db } from '@/lib/database';
-import type { Booking, User, Payment } from '@prisma/client';
+## Current Status
 
-// Utilities
-import { logger } from '@/lib/logger';
-import { config } from '@/lib/config';
+Based on git status, the project has undergone recent restructuring with:
+- New authentication system implementation
+- Core configuration updates
+- Database schema changes
+- New service layer architecture
 
-// Validation
-import { z } from 'zod';
-
-// Testing
-import { describe, it, expect, beforeEach } from 'vitest';
-```
-
-### When Suggesting New Features
-
-**Always consider:**
-1. **Data model impact:** Will this require schema changes?
-2. **API contract:** Does this break existing clients?
-3. **State machine:** How does this affect booking states?
-4. **PDPA:** Does this collect/process personal data?
-5. **Testing:** What test cases are needed?
-
-**Provide:**
-- Migration SQL (if schema change)
-- API endpoint spec (method, path, request/response)
-- Service method signature
-- Test cases outline
-
----
-
-## External Documentation
-
-- [Drizzle Docs](https://orm.drizzle.team/docs/overview) - ORM reference
-- [React Router](https://reactrouter.com/home) - Web framework
-- [Lynx Docs](https://lynxjs.org/guide/start/quick-start.html)
-- [PDPA Thailand Overview](https://www.pdpc.gov.sg/overview-of-pdpa) - Privacy law
-
----
-
-## Questions or Clarifications?
-
-If context is unclear, AI should:
-1. State assumptions explicitly
-2. Offer multiple approaches with pros/cons
-3. Ask for clarification if business logic is ambiguous
-4. Reference this file and project docs before external sources
-
-**Last Updated:** 2025-01-05  
-**Maintained By:** Theerakarnm (Engineer)
+The platform is in active development for Milestone 1 focusing on the core booking system functionality.

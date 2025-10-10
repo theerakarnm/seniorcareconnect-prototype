@@ -3,8 +3,14 @@ import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import { AuthService } from '../core/services/auth.service';
 import { authMiddleware } from '../middleware/auth.middleware';
+import { auth } from "../core/auth/better-auth.config";
 
-const auth = new Hono();
+const authRoute = new Hono<{
+  Variables: {
+    user: typeof auth.$Infer.Session.user | null;
+    session: typeof auth.$Infer.Session.session | null
+  }
+}>();
 
 // Validation schemas
 const loginSchema = z.object({
@@ -35,11 +41,22 @@ const changePasswordSchema = z.object({
   newPassword: z.string().min(8, 'New password must be at least 8 characters long'),
 });
 
+authRoute.get("/session", (c) => {
+  const session = c.get("session")
+  const user = c.get("user")
+
+  if (!user) return c.body(null, 401);
+  return c.json({
+    session,
+    user
+  });
+});
+
 /**
  * POST /auth/register
  * Register a new user
  */
-auth.post('/register', zValidator('json', registerSchema), async (c) => {
+authRoute.post('/register', zValidator('json', registerSchema), async (c) => {
   try {
     const data = c.req.valid('json');
     const result = await AuthService.register(data);
@@ -50,7 +67,7 @@ auth.post('/register', zValidator('json', registerSchema), async (c) => {
     }, 201);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Registration failed';
-    
+
     return c.json({
       success: false,
       error: {
@@ -66,7 +83,7 @@ auth.post('/register', zValidator('json', registerSchema), async (c) => {
  * POST /auth/login
  * Login user
  */
-auth.post('/login', zValidator('json', loginSchema), async (c) => {
+authRoute.post('/login', zValidator('json', loginSchema), async (c) => {
   try {
     const credentials = c.req.valid('json');
     const result = await AuthService.login(credentials);
@@ -77,7 +94,7 @@ auth.post('/login', zValidator('json', loginSchema), async (c) => {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Login failed';
-    
+
     return c.json({
       success: false,
       error: {
@@ -93,7 +110,7 @@ auth.post('/login', zValidator('json', loginSchema), async (c) => {
  * POST /auth/refresh
  * Refresh access token
  */
-auth.post('/refresh', zValidator('json', refreshTokenSchema), async (c) => {
+authRoute.post('/refresh', zValidator('json', refreshTokenSchema), async (c) => {
   try {
     const { refreshToken } = c.req.valid('json');
     const tokens = await AuthService.refreshToken(refreshToken);
@@ -104,7 +121,7 @@ auth.post('/refresh', zValidator('json', refreshTokenSchema), async (c) => {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Token refresh failed';
-    
+
     return c.json({
       success: false,
       error: {
@@ -120,7 +137,7 @@ auth.post('/refresh', zValidator('json', refreshTokenSchema), async (c) => {
  * GET /auth/profile
  * Get current user profile
  */
-auth.get('/profile', authMiddleware, async (c) => {
+authRoute.get('/profile', authMiddleware, async (c) => {
   try {
     const user = c.get('user');
     const profile = await AuthService.getUserById(user.userId);
@@ -142,7 +159,7 @@ auth.get('/profile', authMiddleware, async (c) => {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to get profile';
-    
+
     return c.json({
       success: false,
       error: {
@@ -158,12 +175,21 @@ auth.get('/profile', authMiddleware, async (c) => {
  * PUT /auth/profile
  * Update user profile
  */
-auth.put('/profile', authMiddleware, zValidator('json', updateProfileSchema), async (c) => {
+authRoute.put('/profile', authMiddleware, zValidator('json', updateProfileSchema), async (c) => {
   try {
     const user = c.get('user');
     const updates = c.req.valid('json');
-    
-    const updatedProfile = await AuthService.updateProfile(user.userId, updates);
+
+    if (!user) return c.json({
+      success: false,
+      error: {
+        code: 'UNAUTHORIZED',
+        message: 'Unauthorized',
+        timestamp: new Date().toISOString(),
+      },
+    }, 401);
+
+    const updatedProfile = await AuthService.updateProfile(user?.id, updates);
 
     return c.json({
       success: true,
@@ -171,7 +197,7 @@ auth.put('/profile', authMiddleware, zValidator('json', updateProfileSchema), as
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Profile update failed';
-    
+
     return c.json({
       success: false,
       error: {
@@ -187,11 +213,11 @@ auth.put('/profile', authMiddleware, zValidator('json', updateProfileSchema), as
  * POST /auth/change-password
  * Change user password
  */
-auth.post('/change-password', authMiddleware, zValidator('json', changePasswordSchema), async (c) => {
+authRoute.post('/change-password', authMiddleware, zValidator('json', changePasswordSchema), async (c) => {
   try {
     const user = c.get('user');
     const { currentPassword, newPassword } = c.req.valid('json');
-    
+
     await AuthService.changePassword(user.userId, currentPassword, newPassword);
 
     return c.json({
@@ -200,7 +226,7 @@ auth.post('/change-password', authMiddleware, zValidator('json', changePasswordS
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Password change failed';
-    
+
     return c.json({
       success: false,
       error: {
@@ -216,11 +242,11 @@ auth.post('/change-password', authMiddleware, zValidator('json', changePasswordS
  * POST /auth/logout
  * Logout user (client-side token removal)
  */
-auth.post('/logout', authMiddleware, async (c) => {
+authRoute.post('/logout', authMiddleware, async (c) => {
   // In a JWT-based system, logout is typically handled client-side
   // by removing the tokens from storage. This endpoint exists for
   // consistency and potential future token blacklisting.
-  
+
   return c.json({
     success: true,
     data: { message: 'Logged out successfully' },

@@ -4,12 +4,18 @@ import { logger } from 'hono/logger'
 import { redisClient } from './core/database'
 import { cacheService } from './core/services/cache.service'
 import { config, validateConfig } from './core/config'
-import { clerkMiddleware } from '@hono/clerk-auth'
+import { auth } from "./core/auth/better-auth.config";
 
 // routes
 import * as routes from './routes'
+// import authRoutes from './routes/auth-better'
 
-const app = new Hono()
+const app = new Hono<{
+  Variables: {
+    user: typeof auth.$Infer.Session.user | null;
+    session: typeof auth.$Infer.Session.session | null
+  }
+}>();
 
 // Middleware
 app.use('*', logger())
@@ -19,7 +25,19 @@ app.use('*', cors({
   allowHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 }))
-app.use('*', clerkMiddleware())
+app.use("*", async (c, next) => {
+  const session = await auth.api.getSession({ headers: c.req.raw.headers });
+
+  if (!session) {
+    c.set("user", null);
+    c.set("session", null);
+    return next();
+  }
+
+  c.set("user", session.user);
+  c.set("session", session.session);
+  return next();
+});
 
 // Routes
 app.route('/api/v1/examples', routes.exampleRoute)
