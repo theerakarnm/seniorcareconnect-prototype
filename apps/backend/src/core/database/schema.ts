@@ -20,7 +20,7 @@ export const user = pgTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
   image: text("image"),
-  role: enums.userRoleEnum("role").notNull(),
+  role: enums.userRoleEnum("role").default("customer").notNull(),
   kycVerified: boolean("kyc_verified").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")

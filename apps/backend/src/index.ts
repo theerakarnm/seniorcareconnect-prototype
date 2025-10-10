@@ -8,6 +8,8 @@ import { auth } from "./core/auth/better-auth.config";
 
 // routes
 import * as routes from './routes'
+import adminRoutes from './routes/admin.routes'
+import supplierRoutes from './routes/supplier.routes'
 // import authRoutes from './routes/auth-better'
 
 const app = new Hono<{
@@ -46,6 +48,8 @@ app.on(["POST", "GET"], "/api/auth/*", (c) => {
 
 // Routes
 app.route('/api/v1/examples', routes.exampleRoute)
+app.route('/api/v1/admin', adminRoutes)
+app.route('/api/v1/supplier', supplierRoutes)
 
 app.onError((error, c) => {
   console.error('Error occurred:', error)

@@ -1,0 +1,53 @@
+import { Hono } from 'hono';
+import { requireAuth, requireAdmin } from '../middleware/rbac.middleware';
+
+const admin = new Hono();
+
+/**
+ * Admin dashboard - Admin only
+ */
+admin.get('/dashboard', requireAuth, requireAdmin, async (c) => {
+  const user = (c as any).user;
+
+  return c.json({
+    success: true,
+    data: {
+      message: 'Welcome to admin dashboard',
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    },
+  });
+});
+
+/**
+ * User management - Admin only
+ */
+admin.get('/users', requireAuth, requireAdmin, async (c) => {
+  // Implementation to get all users
+  return c.json({
+    success: true,
+    data: {
+      message: 'User management endpoint',
+      users: [], // Implementation would fetch users from database
+    },
+  });
+});
+
+/**
+ * System settings - Admin only
+ */
+admin.get('/settings', requireAuth, requireAdmin, async (c) => {
+  return c.json({
+    success: true,
+    data: {
+      message: 'System settings endpoint',
+      settings: {}, // Implementation would fetch system settings
+    },
+  });
+});
+
+export default admin;
