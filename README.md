@@ -32,7 +32,7 @@ A comprehensive marketplace platform connecting elderly care seekers with nursin
 ## 🏗️ Technology Stack
 
 - **Frontend Web**: Next.js 15 with React 19
-- **Frontend Mobile**: Expo with React Native
+- **Frontend Mobile**: Expo with React on Lynx
 - **Backend API**: tRPC for type-safe APIs
 - **Database**: PostgreSQL with Drizzle ORM
 - **Authentication**: Better Auth
