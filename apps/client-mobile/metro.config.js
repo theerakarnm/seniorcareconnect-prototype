@@ -4,10 +4,13 @@ const { getDefaultConfig } = require("expo/metro-config");
 const { FileStore } = require("metro-cache");
 const { withNativeWind } = require("nativewind/metro");
 
+const config = getDefaultConfig(__dirname);
+
 module.exports = withTurborepoManagedCache(
-  withNativeWind(getDefaultConfig(__dirname), {
+  withNativeWind(config, {
     input: "./src/styles.css",
     configPath: "./tailwind.config.ts",
+    inlineRem: 14,
   }),
 );
 
