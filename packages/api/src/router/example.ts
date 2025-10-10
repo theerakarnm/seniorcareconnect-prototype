@@ -4,7 +4,7 @@ import { z } from "zod/v4";
 import { publicProcedure } from "../trpc";
 import { ExampleDomain } from "../features/example/example.domain";
 
-export const postRouter = {
+export const exampleRouter = {
   all: publicProcedure.query(() => {
     const exampleDomain = new ExampleDomain();
     return exampleDomain.getExample();

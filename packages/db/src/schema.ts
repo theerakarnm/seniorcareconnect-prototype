@@ -17,11 +17,6 @@ import * as authSchema from "./auth-schema";
 
 
 // Enums
-export const userRoleEnum = pgEnum("user_role", [
-  "customer",
-  "supplier",
-  "admin",
-]);
 export const qcStatusEnum = pgEnum("qc_status", [
   "pending",
   "approved",

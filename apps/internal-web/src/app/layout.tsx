@@ -7,27 +7,28 @@ import { Toaster } from "@acme/ui/toast";
 
 import { env } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
+import { ErrorBoundary } from "~/components/error-boundary";
 
 import "~/app/globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    env.VERCEL_ENV === "production"
-      ? "https://turbo.t3.gg"
+    env.NODE_ENV === "production"
+      ? "https://seniorcareconnect.com"
       : "http://localhost:3000",
   ),
-  title: "Create T3 Turbo",
-  description: "Simple monorepo with shared backend for web & mobile apps",
+  title: "Senior Care Connect",
+  description: "Connecting seniors with quality care services and support",
   openGraph: {
-    title: "Create T3 Turbo",
-    description: "Simple monorepo with shared backend for web & mobile apps",
-    url: "https://create-t3-turbo.vercel.app",
-    siteName: "Create T3 Turbo",
+    title: "Senior Care Connect",
+    description: "Connecting seniors with quality care services and support",
+    url: "https://seniorcareconnect.com",
+    siteName: "Senior Care Connect",
   },
   twitter: {
     card: "summary_large_image",
-    site: "@jullerino",
-    creator: "@jullerino",
+    site: "@theerakarnm",
+    creator: "@theerakarnm",
   },
 };
 
@@ -58,11 +59,13 @@ export default function RootLayout(props: { children: React.ReactNode }) {
         )}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <TRPCReactProvider>{props.children}</TRPCReactProvider>
-          <div className="absolute bottom-4 right-4">
-            <ThemeToggle />
-          </div>
-          <Toaster />
+          <ErrorBoundary>
+            <TRPCReactProvider>{props.children}</TRPCReactProvider>
+            <div className="absolute bottom-4 right-4">
+              <ThemeToggle />
+            </div>
+            <Toaster />
+          </ErrorBoundary>
         </ThemeProvider>
       </body>
     </html>
