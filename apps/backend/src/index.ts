@@ -39,6 +39,11 @@ app.use("*", async (c, next) => {
   return next();
 });
 
+// Auth Route
+app.on(["POST", "GET"], "/api/auth/*", (c) => {
+  return auth.handler(c.req.raw);
+});
+
 // Routes
 app.route('/api/v1/examples', routes.exampleRoute)
 
